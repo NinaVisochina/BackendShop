@@ -14,7 +14,6 @@ namespace BackendShop.BackShop.Controllers
     [ApiController]
     public class ProductController(ShopDbContext _context, IMapper mapper, IConfiguration configuration) : ControllerBase
     {
-        private readonly IMapper mapper;
         // GET: api/Product
         [HttpGet]
         public async Task<IActionResult> GetProducts()

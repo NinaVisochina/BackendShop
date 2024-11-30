@@ -8,7 +8,6 @@ namespace BackendShop.Core.MapperProfiles
     {
         public ProductProfile()
         {
-            // Мапінг ProductEntity на ProductItemModel
             CreateMap<Product, ProductDto>()
                 .ForMember(dest => dest.Images, opt => opt.MapFrom(src =>
                     src.Images != null ? src.Images.Select(img => $"/images/{img.Image}").ToList() : new List<string>()))
