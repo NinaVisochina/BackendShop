@@ -2,6 +2,7 @@
 using BackendShop.Data.Data;
 using BackendShop.Data.Entities;
 using Bogus;
+using Bogus.DataSets;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
@@ -41,39 +42,70 @@ namespace BackendShop.Data.DataSeeder
                     }
                 }
 
-                //if (dbContext.Products.Count() == 0)
-                //{
-                //    var subcategories = dbContext.SubCategories.ToList();
+                if (dbContext.SubCategories.Count() == 0)
+                {
+                    var categories = dbContext.Categories.ToList(); // Отримуємо список існуючих категорій
+                    int number = 10;
+                    var list = new Faker("uk").Commerce.Categories(number);
 
-                //    var fakerProduct = new Faker<Product>("uk")
-                //        .RuleFor(u => u.Name, (f, u) => f.Commerce.Product())
-                //        .RuleFor(u => u.Price, (f, u) => decimal.Parse(f.Commerce.Price()))
-                //        .RuleFor(u => u.SubCategory, (f, u) => f.PickRandom(subcategories));
+                    foreach (var name in list)
+                    {
+                        // Перевіряємо, чи є хоча б одна категорія
+                        if (categories.Any())
+                        {
+                            string image = imageHulk.Save("https://picsum.photos/1200/800?subcategory").Result;
 
-                //    string url = "https://picsum.photos/1200/800?product";
+                            // Випадковий зв'язок із категорією
+                            var randomCategory = new Faker().PickRandom(categories);
 
-                //    var products = fakerProduct.GenerateLazy(32);
-                //    Random r = new Random();
+                            var subCategory = new SubCategory
+                            {
+                                Name = name,
+                                Description = new Faker("uk").Commerce.ProductDescription(),
+                                ImageSubCategoryPath = image,
+                                CategoryId = randomCategory.CategoryId // Зв'язок із категорією
+                            };
 
-                //    foreach (var product in products)
-                //    {
-                //        dbContext.Add(product);
-                //        dbContext.SaveChanges();
-                //        int imageCount = r.Next(3, 5);
-                //        for (int i = 0; i < imageCount; i++)
-                //        {
-                //            var imageName = imageHulk.Save(url).Result;
-                //            var imageProduct = new ProductImageEntity
-                //            {
-                //                Product = product,
-                //                Image = imageName,
-                //                Priority = i
-                //            };
-                //            dbContext.Add(imageProduct);
-                //            dbContext.SaveChanges();
-                //        }
-                //    }
-                //}
+                            dbContext.SubCategories.Add(subCategory);
+                            dbContext.SaveChanges();
+                        }
+                    }
+                }
+
+
+                if (dbContext.Products.Count() == 0)
+                {
+                    var subcategories = dbContext.SubCategories.ToList();
+
+                    var fakerProduct = new Faker<Product>("uk")
+                        .RuleFor(u => u.Name, (f, u) => f.Commerce.Product())
+                        .RuleFor(u => u.Price, (f, u) => decimal.Parse(f.Commerce.Price()))
+                        .RuleFor(u => u.SubCategory, (f, u) => f.PickRandom(subcategories));
+
+                    string url = "https://picsum.photos/1200/800?product";
+
+                    var products = fakerProduct.GenerateLazy(32);
+                    Random r = new Random();
+
+                    foreach (var product in products)
+                    {
+                        dbContext.Add(product);
+                        dbContext.SaveChanges();
+                        int imageCount = r.Next(3, 5);
+                        for (int i = 0; i < imageCount; i++)
+                        {
+                            var imageName = imageHulk.Save(url).Result;
+                            var imageProduct = new ProductImageEntity
+                            {
+                                Product = product,
+                                Image = imageName,
+                                Priority = i
+                            };
+                            dbContext.Add(imageProduct);
+                            dbContext.SaveChanges();
+                        }
+                    }
+                }
 
                 // seed roles
                 //if (dbContext.Roles.Count() == 0)
