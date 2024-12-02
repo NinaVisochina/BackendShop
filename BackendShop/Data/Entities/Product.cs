@@ -34,5 +34,6 @@ namespace BackendShop.Data.Entities
         public int SubCategoryId { get; set; }
         public SubCategory? SubCategory { get; set; }
         public  ICollection<ProductImageEntity>? Images { get; set; }
+        public virtual ICollection<ProductDescImageEntity>? ProductDescImages { get; set; }
     }
 }

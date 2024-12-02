@@ -12,7 +12,7 @@ namespace BackendShop.Core.Dto
 
         public string? Description { get; set; } = string.Empty;
 
-        public string[]? Images { get; set; }
+        public List<string>? Images { get; set; }
 
         public string? Manufacturer { get; set; }
         public string? Size { get; set; }

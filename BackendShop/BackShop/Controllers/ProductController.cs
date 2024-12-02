@@ -1,18 +1,22 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using BackendShop.Core.Dto;
+using BackendShop.Core.Interfaces;
+using BackendShop.Core.Services;
 using BackendShop.Data.Data;
 using BackendShop.Data.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Graph;
+using Microsoft.Graph.Models;
 
 namespace BackendShop.BackShop.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ProductController(ShopDbContext _context, IMapper mapper, IConfiguration configuration) : ControllerBase
+    public class ProductController(ShopDbContext _context, IMapper mapper, IImageHulk imageHulk, IConfiguration configuration) : ControllerBase
     {
         // GET: api/Product
         [HttpGet]
@@ -38,37 +42,39 @@ namespace BackendShop.BackShop.Controllers
             return Ok(product);
         }
 
-        // POST: api/Product
-        //[HttpPost]
-        //public async Task<IActionResult> PostProduct([FromForm] ProductCreateModel model)
-        //{
-        //    var entity = mapper.Map<ProductEntity>(model);
-        //    _context.Products.Add(entity);
-        //    await _context.SaveChangesAsync();
+        //Post: api/Product
+        [HttpPost]
+        public async Task<IActionResult> Create([FromForm] CreateProductDto model)
+        {
+            var entity = mapper.Map<Product>(model);
+            _context.Products.Add(entity);
+            _context.SaveChanges();
 
-        //    if (model.Images != null && model.Images.Any())
-        //    {
-        //        foreach (var image in model.Images)
-        //        {
-        //            string imageName = Guid.NewGuid() + Path.GetExtension(image.FileName);
-        //            var dir = configuration["ImageDir"];
-        //            var fileSave = Path.Combine(Directory.GetCurrentDirectory(), dir, imageName);
+            if (model.ImagesDescIds.Any())
+            {
+                await _context.ProductDescImages
+                    .Where(x => model.ImagesDescIds.Contains(x.Id))
+                    .ForEachAsync(x => x.ProductId = entity.ProductId);
+            }
 
-        //            using (var stream = new FileStream(fileSave, FileMode.Create))
-        //                await image.CopyToAsync(stream);
-
-        //            var productImage = new ProductImageEntity
-        //            {
-        //                ProductId = entity.Id,
-        //                Image = imageName
-        //            };
-        //            _context.ProductImages.Add(productImage);
-        //        }
-        //        await _context.SaveChangesAsync();
-        //    }
-
-        //    return Ok(entity.Id);
-        //}
+            if (model.Images != null)
+            {
+                var p = 1;
+                foreach (var image in model.Images)
+                {
+                    var pi = new ProductImageEntity
+                    {
+                        Image = await imageHulk.Save(image),
+                        Priority = p,
+                        ProductId = entity.ProductId
+                    };
+                    p++;
+                    _context.ProductImageEntity.Add(pi);
+                    await _context.SaveChangesAsync();
+                }
+            }
+            return Created();
+        }
 
 
         // PUT: api/Product/2
@@ -135,45 +141,28 @@ namespace BackendShop.BackShop.Controllers
         //    return NoContent();
         //}
 
-        // DELETE: api/Product/2
-        //[HttpDelete("{id}")]
-        //public async Task<IActionResult> DeleteProduct(int id)
-        //{
-        //    var product = await _context.Products
-        //        .Include(p => p.Images) // Завантажуємо пов'язані зображення
-        //        .FirstOrDefaultAsync(p => p.Id == id);
+        //DELETE: api/Product/2
+        [HttpDelete("{id}")]
+        public IActionResult Delete(int id)
+        {
+            var product = _context.Products
+                .Include(x => x.Images)
+                .Include(x => x.ProductDescImages)
+                .SingleOrDefault(x => x.ProductId == id);
+            if (product == null) return NotFound();
 
-        //    if (product == null)
-        //    {
-        //        return NotFound();
-        //    }
+            if (product.Images != null)
+                foreach (var p in product.Images)
+                    imageHulk.Delete(p.Image);
 
-        //    var dir = configuration["ImageDir"];
-        //    var dirPath = Path.Combine(Directory.GetCurrentDirectory(), dir);
+            if (product.ProductDescImages != null)
+                foreach (var p in product.ProductDescImages)
+                    imageHulk.Delete(p.Image);
 
-        //    // Видаляємо всі зображення продукту з файлової системи
-        //    foreach (var image in product.Images)
-        //    {
-        //        var imagePath = Path.Combine(dirPath, image.Image);
-        //        if (System.IO.File.Exists(imagePath))
-        //        {
-        //            try
-        //            {
-        //                System.IO.File.Delete(imagePath);
-        //            }
-        //            catch (Exception ex)
-        //            {
-        //                return StatusCode(StatusCodes.Status500InternalServerError, $"Error deleting image: {ex.Message}");
-        //            }
-        //        }
-        //    }
-
-        // Видаляємо продукт і всі пов'язані з ним зображення
-        //_context.Products.Remove(product);
-        //await _context.SaveChangesAsync();
-
-        //return NoContent();
-    //}
+            _context.Products.Remove(product);
+            _context.SaveChanges();
+            return Ok();
+        }
 
     }
 }

@@ -103,6 +103,29 @@ namespace BackendShop.Migrations
                     b.ToTable("Products", (string)null);
                 });
 
+            modelBuilder.Entity("BackendShop.Data.Entities.ProductDescImageEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Image")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<int?>("ProductId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("ProductDescImages");
+                });
+
             modelBuilder.Entity("BackendShop.Data.Entities.ProductImageEntity", b =>
                 {
                     b.Property<int>("Id")
@@ -170,6 +193,15 @@ namespace BackendShop.Migrations
                     b.Navigation("SubCategory");
                 });
 
+            modelBuilder.Entity("BackendShop.Data.Entities.ProductDescImageEntity", b =>
+                {
+                    b.HasOne("BackendShop.Data.Entities.Product", "Product")
+                        .WithMany("ProductDescImages")
+                        .HasForeignKey("ProductId");
+
+                    b.Navigation("Product");
+                });
+
             modelBuilder.Entity("BackendShop.Data.Entities.ProductImageEntity", b =>
                 {
                     b.HasOne("BackendShop.Data.Entities.Product", "Product")
@@ -200,6 +232,8 @@ namespace BackendShop.Migrations
             modelBuilder.Entity("BackendShop.Data.Entities.Product", b =>
                 {
                     b.Navigation("Images");
+
+                    b.Navigation("ProductDescImages");
                 });
 
             modelBuilder.Entity("BackendShop.Data.Entities.SubCategory", b =>

@@ -10,8 +10,14 @@ namespace BackendShop.Core.MapperProfiles
         public CategoryProfile()
         {
             CreateMap<Category, CategoryDto>()
-                .ForMember(x => x.ImageCategory, opt => opt.MapFrom(x =>
-                    string.IsNullOrEmpty(x.ImageCategoryPath) ? "/images/noimage.jpg" : $"/images/{x.ImageCategoryPath}"));
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
+                .ForMember(dest => dest.CategoryId, opt => opt.MapFrom(src => src.CategoryId)).ReverseMap();
+            //.ForMember(x => x.ImageCategory, opt => opt.MapFrom(x =>
+            // string.IsNullOrEmpty(x.ImageCategoryPath) ? "/images/noimage.jpg" : $"/images/{x.ImageCategoryPath}"));
+            CreateMap<CategoryCreateViewModel, Category>()
+                .ForMember(x => x.ImageCategoryPath, opt => opt.Ignore());
+            CreateMap<CategoryEditViewModel, Category>()
+                .ForMember(x => x.ImageCategoryPath, opt => opt.Ignore()).ReverseMap();
         }
     }
 }
