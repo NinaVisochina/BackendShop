@@ -1,7 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BackendShop.Data.Entities
 {
+    [Table("tblProducts")]
     public class Product
     {
         [Key]
@@ -12,7 +14,7 @@ namespace BackendShop.Data.Entities
         [Required, StringLength(255)]
         public string Name { get; set; } = string.Empty;
 
-        public string? Description { get; set; } = string.Empty;
+        public string? Description { get; set; }
 
         public string? Manufacturer { get; set; }
         public string? Size { get; set; }
@@ -31,6 +33,7 @@ namespace BackendShop.Data.Entities
        // public bool IsAvailable { get; set; }
 
         public string? Model { get; set; }
+        //[ForeignKey("SubCategory")]
         public int SubCategoryId { get; set; }
         public SubCategory? SubCategory { get; set; }
         public  ICollection<ProductImageEntity>? Images { get; set; }

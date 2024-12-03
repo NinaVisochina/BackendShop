@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
-using BackendShop.Core.Dto;
+using BackendShop.Core.Dto.Category;
 using BackendShop.Core.Interfaces;
 using BackendShop.Core.Services;
 using BackendShop.Data.Data;
@@ -53,7 +53,7 @@ namespace BackendShop.BackShop.Controllers
         public async Task<IActionResult> Edit([FromForm] CategoryDto model)
         {
             if (model == null) return NotFound();
-            var category = _context.Categories.SingleOrDefault(x => x.CategoryId == model.CategoryId);
+            var category = _context.Categories.SingleOrDefault(x => x.CategoryId == model.Id);
             category = mapper.Map(model, category);
             if (model.ImageCategory != null)
             {
@@ -70,7 +70,7 @@ namespace BackendShop.BackShop.Controllers
             {
                 var item = _context.Categories
                     .ProjectTo<CategoryDto>(mapper.ConfigurationProvider)
-                    .SingleOrDefault(x => x.CategoryId == id);
+                    .SingleOrDefault(x => x.Id == id);
                 return Ok(item);
             }
 

@@ -19,10 +19,10 @@ namespace BackendShop.Data.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<Product>()
-                .Property(p => p.Price)
-                .HasColumnType("decimal(18,2)");
-            modelBuilder.Entity<Product>().ToTable("Products");
+            //modelBuilder.Entity<Product>()
+            //    .Property(p => p.Price)
+            //    .HasColumnType("decimal(18,2)");
+            //modelBuilder.Entity<Product>().ToTable("Products");
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
-using BackendShop.Core.Dto;
+using BackendShop.Core.Dto.Product;
 using BackendShop.Core.Interfaces;
 using BackendShop.Core.Services;
 using BackendShop.Data.Data;
@@ -26,20 +26,6 @@ namespace BackendShop.BackShop.Controllers
                 .ProjectTo<ProductDto>(mapper.ConfigurationProvider)
                 .ToListAsync();
             return Ok(model);
-        }
-
-        // GET: api/Product/2
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Product>> GetProduct(int id)
-        {
-            var product = await _context.Products.FindAsync(id);
-
-            if (product == null)
-            {
-                return NotFound();
-            }
-
-            return Ok(product);
         }
 
         //Post: api/Product
@@ -73,10 +59,20 @@ namespace BackendShop.BackShop.Controllers
                     await _context.SaveChangesAsync();
                 }
             }
-            return Created();
+            // return Created();
+            return Ok();
         }
 
-
+        // GET: api/Product/2
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetProductById(int id)
+        {
+            var product = await _context.Products
+                .ProjectTo<ProductDto>(mapper.ConfigurationProvider)
+                .SingleOrDefaultAsync(p => p.Id == id);
+            if (product == null) return NotFound();
+            return Ok(product);
+        }
         // PUT: api/Product/2
         //[HttpPut("{id}")]
         //public async Task<IActionResult> EditProduct(int id, [FromForm] ProductEditModel model)

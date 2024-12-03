@@ -1,7 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BackendShop.Data.Entities
 {
+    [Table("tblCategories")]
     public class Category
     {
         [Key]

@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using BackendShop.Core.Dto;
+using BackendShop.Core.Dto.Category;
 using BackendShop.Data.Entities;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
@@ -11,7 +11,7 @@ namespace BackendShop.Core.MapperProfiles
         {
             CreateMap<Category, CategoryDto>()
                 .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
-                .ForMember(dest => dest.CategoryId, opt => opt.MapFrom(src => src.CategoryId)).ReverseMap();
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.CategoryId)).ReverseMap();
             //.ForMember(x => x.ImageCategory, opt => opt.MapFrom(x =>
             // string.IsNullOrEmpty(x.ImageCategoryPath) ? "/images/noimage.jpg" : $"/images/{x.ImageCategoryPath}"));
             CreateMap<CategoryCreateViewModel, Category>()

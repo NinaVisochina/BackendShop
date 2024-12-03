@@ -43,7 +43,7 @@ namespace BackendShop.Migrations
 
                     b.HasKey("CategoryId");
 
-                    b.ToTable("Categories");
+                    b.ToTable("tblCategories");
                 });
 
             modelBuilder.Entity("BackendShop.Data.Entities.Product", b =>
@@ -100,7 +100,7 @@ namespace BackendShop.Migrations
 
                     b.HasIndex("SubCategoryId");
 
-                    b.ToTable("Products", (string)null);
+                    b.ToTable("tblProducts");
                 });
 
             modelBuilder.Entity("BackendShop.Data.Entities.ProductDescImageEntity", b =>
@@ -179,7 +179,7 @@ namespace BackendShop.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("SubCategories");
+                    b.ToTable("tblSubCategories");
                 });
 
             modelBuilder.Entity("BackendShop.Data.Entities.Product", b =>
