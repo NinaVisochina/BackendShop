@@ -33,10 +33,10 @@ namespace BackendShop.Data.Entities
        // public bool IsAvailable { get; set; }
 
         public string? Model { get; set; }
-        //[ForeignKey("SubCategory")]
+        [ForeignKey("SubCategory")]
         public int SubCategoryId { get; set; }
         public SubCategory? SubCategory { get; set; }
-        public  ICollection<ProductImageEntity>? Images { get; set; }
+        public virtual ICollection<ProductImageEntity>? Images { get; set; }
         public virtual ICollection<ProductDescImageEntity>? ProductDescImages { get; set; }
     }
 }

@@ -18,6 +18,10 @@ namespace BackendShop.Core.MapperProfiles
             CreateMap<EditProductDto, Product>()
                 .ForMember(x => x.Images, opt => opt.Ignore());
 
+           CreateMap<IFormFile, ProductImageEntity>()
+             .ForMember(dest => dest.Image, opt => opt.MapFrom(src => src.FileName)) // Це базове значення, якщо Image — це шлях
+             .ForMember(dest => dest.Priority, opt => opt.Ignore());
+
             CreateMap<ProductDescImageEntity, ProductDescImageIdViewModel>();
             //CreateMap<Product, ProductDto>()
             //    .ForMember(dest => dest.Images, opt => opt.MapFrom(src =>

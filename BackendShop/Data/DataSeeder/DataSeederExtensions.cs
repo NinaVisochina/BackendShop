@@ -11,101 +11,222 @@ namespace BackendShop.Data.DataSeeder
 {
     public static class DataSeederExtensions
     {
-        public static void SeedData(this IApplicationBuilder app)
+        public static async Task SeedDataAsync(this IApplicationBuilder app)
         {
-            using (var scope = app.ApplicationServices
-                .GetRequiredService<IServiceScopeFactory>().CreateScope())
+            using (var scope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope())
             {
                 var dbContext = scope.ServiceProvider.GetRequiredService<ShopDbContext>();
                 var imageHulk = scope.ServiceProvider.GetRequiredService<IImageHulk>();
-                //var userManager = scope.ServiceProvider.GetRequiredService<UserManager<UserEntity>>();
-                //var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<RoleEntity>>();
-                //dbContext.Database.EnsureDeleted();
                 dbContext.Database.Migrate();
 
-                if (dbContext.Categories.Count() == 0)
+                // Seed Categories
+                if (!dbContext.Categories.Any())
                 {
-                    int number = 10;
-                    var list = new Faker("uk")
-                        .Commerce.Categories(number);
-                    foreach (var name in list)
+                    int number = 5;
+                    var faker = new Faker("uk");
+                    var categories = new List<Category>();
+
+                    for (int i = 0; i < number; i++)
                     {
-                        string image = imageHulk.Save("https://picsum.photos/1200/800?category").Result;
-                        var cat = new Category
+                        string image = await imageHulk.Save("https://picsum.photos/1200/800?category");
+                        categories.Add(new Category
                         {
-                            Name = name,
-                            Description = new Faker("uk").Commerce.ProductDescription(),
+                            Name = faker.Commerce.Categories(1).First(),
+                            Description = faker.Commerce.ProductDescription(),
                             ImageCategoryPath = image
-                        };
-                        dbContext.Categories.Add(cat);
-                        dbContext.SaveChanges();
+                        });
                     }
+
+                    dbContext.Categories.AddRange(categories);
+                    dbContext.SaveChanges();
                 }
 
-                if (dbContext.SubCategories.Count() == 0)
+                // Seed SubCategories
+                if (!dbContext.SubCategories.Any())
                 {
-                    var categories = dbContext.Categories.ToList(); // Отримуємо список існуючих категорій
-                    int number = 10;
-                    var list = new Faker("uk").Commerce.Categories(number);
+                    var categories = dbContext.Categories.ToList();
+                    if (!categories.Any()) return; // Без категорій підкатегорії неможливо створити
 
-                    foreach (var name in list)
+                    var faker = new Faker("uk");
+                    var subCategories = new List<SubCategory>();
+
+                    for (int i = 0; i < 5; i++)
                     {
-                        // Перевіряємо, чи є хоча б одна категорія
-                        if (categories.Any())
+                        string image = await imageHulk.Save("https://picsum.photos/1200/800?subcategory");
+                        var randomCategory = faker.PickRandom(categories);
+
+                        subCategories.Add(new SubCategory
                         {
-                            string image = imageHulk.Save("https://picsum.photos/1200/800?subcategory").Result;
-
-                            // Випадковий зв'язок із категорією
-                            var randomCategory = new Faker().PickRandom(categories);
-
-                            var subCategory = new SubCategory
-                            {
-                                Name = name,
-                                Description = new Faker("uk").Commerce.ProductDescription(),
-                                ImageSubCategoryPath = image,
-                                CategoryId = randomCategory.CategoryId // Зв'язок із категорією
-                            };
-
-                            dbContext.SubCategories.Add(subCategory);
-                            dbContext.SaveChanges();
-                        }
+                            Name = faker.Commerce.Categories(1).First(),
+                            Description = faker.Commerce.ProductDescription(),
+                            ImageSubCategoryPath = image,
+                            CategoryId = randomCategory.CategoryId
+                        });
                     }
+
+                    dbContext.SubCategories.AddRange(subCategories);
+                    dbContext.SaveChanges();
                 }
-
-
-                if (dbContext.Products.Count() == 0)
+                if (!dbContext.Products.Any())
                 {
                     var subcategories = dbContext.SubCategories.ToList();
+                    if (!subcategories.Any()) return; // Переконайтеся, що підкатегорії існують
 
-                    var fakerProduct = new Faker<Product>("uk")
-                        .RuleFor(u => u.Name, (f, u) => f.Commerce.Product())
-                        .RuleFor(u => u.Price, (f, u) => decimal.Parse(f.Commerce.Price()))
-                        .RuleFor(u => u.SubCategory, (f, u) => f.PickRandom(subcategories));
+                    var faker = new Faker("uk");
+                    var products = new List<Product>();
 
-                    string url = "https://picsum.photos/1200/800?product";
+                    for (int i = 0; i < 5; i++)
+                    {
+                        var subCategory = faker.PickRandom(subcategories);
 
-                    var products = fakerProduct.GenerateLazy(32);
-                    Random r = new Random();
+                        var product = new Product
+                        {
+                            Code = faker.Commerce.Ean13(),
+                            Name = faker.Commerce.ProductName(),
+                            Description = faker.Lorem.Paragraph(),
+                            Manufacturer = faker.Company.CompanyName(),
+                            Size = faker.Commerce.ProductAdjective(),
+                            Color = faker.Commerce.Color(),
+                            Type = faker.Commerce.Department(),
+                            Form = faker.Commerce.ProductMaterial(),
+                            Price = decimal.Parse(faker.Commerce.Price()),
+                            QuantityInPack = faker.Random.Int(1, 10),
+                            QuantityInStock = faker.Random.Int(0, 100),
+                            Model = faker.Commerce.ProductMaterial(),
+                            SubCategoryId = subCategory.SubCategoryId // Зв'язок з підкатегорією
+                        };
 
+                        products.Add(product);
+                    }
+
+                    dbContext.Products.AddRange(products);
+                    dbContext.SaveChanges();
+
+                    // Додаємо зображення для кожного продукту
                     foreach (var product in products)
                     {
-                        dbContext.Add(product);
-                        dbContext.SaveChanges();
-                        int imageCount = r.Next(3, 5);
-                        for (int i = 0; i < imageCount; i++)
+                        var images = new List<ProductImageEntity>();
+                        for (int j = 0; j < 3; j++)
                         {
-                            var imageName = imageHulk.Save(url).Result;
-                            var imageProduct = new ProductImageEntity
+                            string imageUrl = $"https://picsum.photos/200/300?random={Guid.NewGuid()}";
+                            images.Add(new ProductImageEntity
                             {
-                                Product = product,
-                                Image = imageName,
-                                Priority = i
-                            };
-                            dbContext.Add(imageProduct);
-                            dbContext.SaveChanges();
+                                ProductId = product.ProductId,
+                                Image = await imageHulk.Save(imageUrl),
+                                Priority = j + 1
+                            });
+                        }
+
+                        dbContext.ProductImageEntity.AddRange(images);
+
+                        // Додаємо описові зображення (ImagesDescIds)
+                        for (int j = 0; j < 2; j++)
+                        {
+                            string descImageUrl = $"https://picsum.photos/400/300?random={Guid.NewGuid()}";
+                            dbContext.ProductDescImages.Add(new ProductDescImageEntity
+                            {
+                                ProductId = product.ProductId,
+                                Image = await imageHulk.Save(descImageUrl)
+                            });
                         }
                     }
+
+                    dbContext.SaveChanges();
                 }
+
+                //using (var scope = app.ApplicationServices
+                //    .GetRequiredService<IServiceScopeFactory>().CreateScope())
+                //{
+                //    var dbContext = scope.ServiceProvider.GetRequiredService<ShopDbContext>();
+                //    var imageHulk = scope.ServiceProvider.GetRequiredService<IImageHulk>();
+                //    //var userManager = scope.ServiceProvider.GetRequiredService<UserManager<UserEntity>>();
+                //    //var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<RoleEntity>>();
+                //    //dbContext.Database.EnsureDeleted();
+                //    dbContext.Database.Migrate();
+
+                //    if (dbContext.Categories.Count() == 0)
+                //    {
+                //        int number = 10;
+                //        var list = new Faker("uk")
+                //            .Commerce.Categories(number);
+                //        foreach (var name in list)
+                //        {
+                //            string image = imageHulk.Save("https://picsum.photos/1200/800?category").Result;
+                //            var cat = new Category
+                //            {
+                //                Name = name,
+                //                Description = new Faker("uk").Commerce.ProductDescription(),
+                //                ImageCategoryPath = image
+                //            };
+                //            dbContext.Categories.Add(cat);
+                //            dbContext.SaveChanges();
+                //        }
+                //    }
+
+                //    if (dbContext.SubCategories.Count() == 0)
+                //    {
+                //        var categories = dbContext.Categories.ToList(); // Отримуємо список існуючих категорій
+                //        int number = 10;
+                //        var list = new Faker("uk").Commerce.Categories(number);
+
+                //        foreach (var name in list)
+                //        {
+                //            // Перевіряємо, чи є хоча б одна категорія
+                //            if (categories.Any())
+                //            {
+                //                string image = imageHulk.Save("https://picsum.photos/1200/800?subcategory").Result;
+
+                //                // Випадковий зв'язок із категорією
+                //                var randomCategory = new Faker().PickRandom(categories);
+
+                //                var subCategory = new SubCategory
+                //                {
+                //                    Name = name,
+                //                    Description = new Faker("uk").Commerce.ProductDescription(),
+                //                    ImageSubCategoryPath = image,
+                //                    CategoryId = randomCategory.CategoryId // Зв'язок із категорією
+                //                };
+
+                //                dbContext.SubCategories.Add(subCategory);
+                //                dbContext.SaveChanges();
+                //            }
+                //        }
+                //    }
+
+
+                //    if (dbContext.Products.Count() == 0)
+                //    {
+                //        var subcategories = dbContext.SubCategories.ToList();
+
+                //        var fakerProduct = new Faker<Product>("uk")
+                //            .RuleFor(u => u.Name, (f, u) => f.Commerce.Product())
+                //            .RuleFor(u => u.Price, (f, u) => decimal.Parse(f.Commerce.Price()))
+                //            .RuleFor(u => u.SubCategoryId, (f, u) => f.PickRandom(subcategories).SubCategoryId);
+
+                //        string url = "https://picsum.photos/1200/800?product";
+
+                //        var products = fakerProduct.GenerateLazy(32);
+                //        Random r = new Random();
+
+                //        foreach (var product in products)
+                //        {
+                //            dbContext.Add(product);
+                //            dbContext.SaveChanges();
+                //            int imageCount = r.Next(3, 5);
+                //            for (int i = 0; i < imageCount; i++)
+                //            {
+                //                var imageName = imageHulk.Save(url).Result;
+                //                var imageProduct = new ProductImageEntity
+                //                {
+                //                    Product = product,
+                //                    Image = imageName,
+                //                    Priority = i
+                //                };
+                //                dbContext.Add(imageProduct);
+                //                dbContext.SaveChanges();
+                //            }
+                //        }
+                //    }
 
                 // seed roles
                 //if (dbContext.Roles.Count() == 0)

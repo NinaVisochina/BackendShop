@@ -1,4 +1,6 @@
-﻿namespace BackendShop.Core.Dto.Product
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace BackendShop.Core.Dto.Product
 {
     public class ProductDescImageIdViewModel
     {

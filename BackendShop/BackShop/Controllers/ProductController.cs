@@ -59,8 +59,7 @@ namespace BackendShop.BackShop.Controllers
                     await _context.SaveChangesAsync();
                 }
             }
-            // return Created();
-            return Ok();
+            return Created();
         }
 
         // GET: api/Product/2
@@ -136,6 +135,23 @@ namespace BackendShop.BackShop.Controllers
 
         //    return NoContent();
         //}
+
+        [HttpPost("upload")]
+        public async Task<IActionResult> UploadDescImage([FromForm] ProductDescImageUploadViewModel model)
+        {
+            if (model.Image != null)
+            {
+                var pdi = new ProductDescImageEntity
+                {
+                    Image = await imageHulk.Save(model.Image),
+
+                };
+                _context.ProductDescImages.Add(pdi);
+                await _context.SaveChangesAsync();
+                return Ok(mapper.Map<ProductDescImageIdViewModel>(pdi));
+            }
+            return BadRequest();
+        }
 
         //DELETE: api/Product/2
         [HttpDelete("{id}")]

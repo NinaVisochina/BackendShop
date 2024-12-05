@@ -40,7 +40,7 @@ app.UseStaticFiles(new StaticFileOptions
 });
 
 app.UseAuthorization();
-app.SeedData();
+app.SeedDataAsync();
 
 app.MapControllers();
 
