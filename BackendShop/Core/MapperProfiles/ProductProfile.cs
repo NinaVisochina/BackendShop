@@ -23,17 +23,6 @@ namespace BackendShop.Core.MapperProfiles
              .ForMember(dest => dest.Priority, opt => opt.Ignore());
 
             CreateMap<ProductDescImageEntity, ProductDescImageIdViewModel>();
-            //CreateMap<Product, ProductDto>()
-            //    .ForMember(dest => dest.Images, opt => opt.MapFrom(src =>
-            //        src.Images != null ? src.Images.Select(img => $"/images/{img.Image}").ToList() : new List<string>()))
-            //    .ForMember(dest => dest.SubCategoryName, opt => opt.MapFrom(src => src.SubCategory != null ? src.SubCategory.Name : string.Empty));
-
-            //CreateMap<CreateProductDto, Product>().ReverseMap();
-
-            ////CreateMap<ProductEditViewModel, ProductEntity>()
-            //// .ForMember(x => x.ProductImages, opt => opt.Ignore());
-
-            //CreateMap<ProductDescImageEntity, ProductDescImageIdViewModel>();
         }
     }
 }
