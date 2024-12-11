@@ -30,23 +30,23 @@ namespace BackendShop.BackShop.Controllers
 
         //Post: api/Product
         [HttpPost]
-        public async Task<IActionResult> Create([FromForm] CreateProductDto model)
+        public async Task<IActionResult> Create([FromForm] CreateProductDto modell)
         {
-            var entity = mapper.Map<Product>(model);
+            var entity = mapper.Map<Product>(modell);
             _context.Products.Add(entity);
             _context.SaveChanges();
 
-            if (model.ImagesDescIds.Any())
+            if (modell.ImagesDescIds.Any())
             {
                 await _context.ProductDescImages
-                    .Where(x => model.ImagesDescIds.Contains(x.Id))
+                    .Where(x => modell.ImagesDescIds.Contains(x.Id))
                     .ForEachAsync(x => x.ProductId = entity.ProductId);
             }
 
-            if (model.Images != null)
+            if (modell.Images != null)
             {
                 var p = 1;
-                foreach (var image in model.Images)
+                foreach (var image in modell.Images)
                 {
                     var pi = new ProductImageEntity
                     {

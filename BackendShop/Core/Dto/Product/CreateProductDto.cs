@@ -25,7 +25,7 @@ namespace BackendShop.Core.Dto.Product
         public int QuantityInStock { get; set; }
         //////public bool IsAvailable { get; set; }
 
-        //public string? Model { get; set; }
+        public string? Model { get; set; }
         [BindProperty(Name = "images[]")]
         public List<IFormFile>? Images { get; set; }
         public List<int> ImagesDescIds { get; set; } = [];
