@@ -56,21 +56,36 @@ namespace BackendShop.BackShop.Controllers
         }
 
         // PUT: api/SubCategory/{id}
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Edit(int id, [FromForm] SubCategoryDto model)
+        [HttpPut]
+        public async Task<IActionResult> Edit([FromForm] EditSubCategoryDto model)
         {
-            var subCategory = _context.SubCategories.SingleOrDefault(x => x.SubCategoryId == id);
-            if (subCategory == null) return NotFound();
-
-            mapper.Map(model, subCategory);
-            if (model.ImageSubCategory != null)
+            var subCategory = await _context.SubCategories.SingleOrDefaultAsync(x => x.SubCategoryId == model.Id);
+            if (subCategory == null)
             {
-                imageHulk.Delete(subCategory.ImageSubCategoryPath);
-                string fname = await imageHulk.Save(model.ImageSubCategory);
-                subCategory.ImageSubCategoryPath = fname;
+                return NotFound();
             }
 
+            // Update basic fields
+            subCategory.Name = model.Name;
+            subCategory.CategoryId = model.CategoryId;
+
+            // Handle image update
+            if (model.ImageSubCategory != null && model.ImageSubCategory.Length > 0)
+            {
+                // Delete the old image if it exists
+                if (!string.IsNullOrEmpty(subCategory.ImageSubCategoryPath))
+                {
+                    imageHulk.Delete(subCategory.ImageSubCategoryPath);
+                }
+
+                // Save the new image
+                var newImageName = await imageHulk.Save(model.ImageSubCategory);
+                subCategory.ImageSubCategoryPath = newImageName;
+            }
+
+            _context.SubCategories.Update(subCategory);
             await _context.SaveChangesAsync();
+
             return Ok();
         }
 

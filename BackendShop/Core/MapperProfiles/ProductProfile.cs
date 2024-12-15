@@ -23,7 +23,7 @@ namespace BackendShop.Core.MapperProfiles
              .ForMember(dest => dest.Image, opt => opt.MapFrom(src => src.FileName)) // Це базове значення, якщо Image — це шлях
              .ForMember(dest => dest.Priority, opt => opt.Ignore());
 
-            CreateMap<ProductDescImageEntity, ProductDescImageIdViewModel>();
+            CreateMap<ProductDescImageEntity, ProductDescImageIdDto>();
         }
     }
 }

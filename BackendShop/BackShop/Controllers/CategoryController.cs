@@ -18,6 +18,7 @@ namespace BackendShop.BackShop.Controllers
         [HttpGet]
         public IActionResult GetList()
         {
+            Console.WriteLine("Запит отримано на GetList");
             Thread.Sleep(1000);
             var list = _context.Categories
                 .ProjectTo<CategoryDto>(mapper.ConfigurationProvider)
@@ -25,8 +26,8 @@ namespace BackendShop.BackShop.Controllers
             return Ok(list);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Create([FromForm] CategoryCreateViewModel model)
+        [HttpPost("create")]
+        public async Task<IActionResult> Create([FromForm] CategoryCreateDto model)
         {
             var imageName = await imageHulk.Save(model.ImageCategory);
             var entity = mapper.Map<Category>(model);
@@ -50,7 +51,7 @@ namespace BackendShop.BackShop.Controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> Edit([FromForm] CategoryEditViewModel model)
+        public async Task<IActionResult> Edit([FromForm] CategoryEditDto model)
         {
             var entity = await _context.Categories.SingleOrDefaultAsync(x => x.CategoryId == model.Id);
             if (entity == null)
@@ -60,7 +61,7 @@ namespace BackendShop.BackShop.Controllers
             entity.Name = model.Name;
 
             // Handle image update
-            if (model.Image != null && model.Image.Length > 0)
+            if (model.ImageCategory != null && model.ImageCategory.Length > 0)
             {
                 // Delete the old image if it exists
                 if (!string.IsNullOrEmpty(entity.ImageCategoryPath))
@@ -69,7 +70,7 @@ namespace BackendShop.BackShop.Controllers
                 }
 
                 // Save the new image
-                var newImageName = await imageHulk.Save(model.Image);
+                var newImageName = await imageHulk.Save(model.ImageCategory);
                 entity.ImageCategoryPath = newImageName;
             }
 

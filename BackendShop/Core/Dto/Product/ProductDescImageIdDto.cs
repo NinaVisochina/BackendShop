@@ -2,7 +2,7 @@
 
 namespace BackendShop.Core.Dto.Product
 {
-    public class ProductDescImageIdViewModel
+    public class ProductDescImageIdDto
     {
         public required int Id { get; set; }
         public required string Image { get; set; }

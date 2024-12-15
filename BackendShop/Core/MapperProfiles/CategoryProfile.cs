@@ -16,9 +16,9 @@ namespace BackendShop.Core.MapperProfiles
                         string.IsNullOrEmpty(src.ImageCategoryPath)
                         ? "noimage.jpg"  // Файл-заглушка
                         : src.ImageCategoryPath));
-            CreateMap<CategoryCreateViewModel, Category>()
+            CreateMap<CategoryCreateDto, Category>()
                 .ForMember(x => x.ImageCategoryPath, opt => opt.Ignore());
-            CreateMap<CategoryEditViewModel, Category>()
+            CreateMap<CategoryEditDto, Category>()
                 .ForMember(x => x.ImageCategoryPath, opt => opt.Ignore());
         }
     }

@@ -73,71 +73,56 @@ namespace BackendShop.BackShop.Controllers
             return Ok(product);
         }
         // PUT: api/Product/2
-        //[HttpPut("{id}")]
-        //public async Task<IActionResult> EditProduct(int id, [FromForm] ProductEditModel model)
-        //{
-        //    var product = await _context.Products
-        //        .Include(p => p.Images) // Завантажуємо всі зображення продукту
-        //        .FirstOrDefaultAsync(p => p.Id == id);
+        [HttpPut]
+        public async Task<IActionResult> Edit([FromForm] EditProductDto model)
+        {
+            var request = this.Request;
+            var product = await _context.Products
+                .Include(p => p.Images)
+                .FirstOrDefaultAsync(p => p.ProductId == model.Id);
 
-        //    if (product == null)
-        //    {
-        //        return NotFound();
-        //    }
+            mapper.Map(model, product);
 
-        //    // Мапимо основні поля з моделі редагування на сутність продукту
-        //    mapper.Map(model, product);
+            var oldNameImages = model.Images.Where(x => x.ContentType.Contains("old-image"))
+                .Select(x => x.FileName) ?? [];
 
-        //    var dir = configuration["ImageDir"];
-        //    var dirPath = Path.Combine(Directory.GetCurrentDirectory(), dir);
+            var imgToDelete = product?.Images?.Where(x => !oldNameImages.Contains(x.Image)) ?? [];
+            foreach (var imgDel in imgToDelete)
+            {
+                _context.ProductImageEntity.Remove(imgDel);
+                imageHulk.Delete(imgDel.Image);
+            }
 
-        //    // Додаємо нові зображення, якщо вони надані
-        //    if (model.Images != null && model.Images.Any())
-        //    {
-        //        foreach (var imageFile in model.Images)
-        //        {
-        //            string imageName = Guid.NewGuid() + Path.GetExtension(imageFile.FileName);
-        //            var fileSave = Path.Combine(dirPath, imageName);
+            if (model.Images is not null)
+            {
+                int index = 0;
+                foreach (var image in model.Images)
+                {
+                    if (image.ContentType == "old-image")
+                    {
+                        var oldImage = product?.Images?.FirstOrDefault(x => x.Image == image.FileName)!;
+                        oldImage.Priority = index;
+                    }
+                    else
+                    {
+                        var imagePath = await imageHulk.Save(image);
+                        _context.ProductImageEntity.Add(new ProductImageEntity
+                        {
+                            Image = imagePath,
+                            Product = product,
+                            Priority = index
+                        });
+                    }
+                    index++;
+                }
+            }
+            await _context.SaveChangesAsync();
 
-        //            using (var stream = new FileStream(fileSave, FileMode.Create))
-        //                await imageFile.CopyToAsync(stream);
-
-        //            var productImage = new ProductImageEntity
-        //            {
-        //                ProductId = product.Id,
-        //                Image = imageName,
-        //                Priority = model.Priority // Можна передавати пріоритет для зображень
-        //            };
-        //            _context.ProductImages.Add(productImage);
-        //        }
-        //    }
-
-        // Видаляємо старі зображення, якщо їх потрібно замінити
-        //    if (model.RemoveImageIds != null && model.RemoveImageIds.Any())
-        //    {
-        //        var imagesToRemove = product.Images
-        //            .Where(img => model.RemoveImageIds.Contains(img.Id))
-        //            .ToList();
-
-        //        foreach (var image in imagesToRemove)
-        //        {
-        //            var imagePath = Path.Combine(dirPath, image.Image);
-        //            if (System.IO.File.Exists(imagePath))
-        //            {
-        //                System.IO.File.Delete(imagePath);
-        //            }
-        //            _context.ProductImages.Remove(image);
-        //        }
-        //    }
-
-        //    _context.Products.Update(product);
-        //    await _context.SaveChangesAsync();
-
-        //    return NoContent();
-        //}
+            return Ok();
+        }
 
         [HttpPost("upload")]
-        public async Task<IActionResult> UploadDescImage([FromForm] ProductDescImageUploadViewModel model)
+        public async Task<IActionResult> UploadDescImage([FromForm] ProductDescImageUploadDto model)
         {
             if (model.Image != null)
             {
@@ -148,7 +133,7 @@ namespace BackendShop.BackShop.Controllers
                 };
                 _context.ProductDescImages.Add(pdi);
                 await _context.SaveChangesAsync();
-                return Ok(mapper.Map<ProductDescImageIdViewModel>(pdi));
+                return Ok(mapper.Map<ProductDescImageIdDto>(pdi));
             }
             return BadRequest();
         }

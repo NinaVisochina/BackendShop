@@ -1,6 +1,6 @@
 ﻿namespace BackendShop.Core.Dto.Product
 {
-    public class ProductImageViewModel
+    public class ProductImageDto
     {
         public int Id { get; set; }
         public string? File { get; set; }
