@@ -22,7 +22,6 @@ namespace BackendShop.Data.Entities
 
         public string? Type { get; set; }
 
-
         public string? Form { get; set; }
         [Required]
         [DataType(DataType.Currency)]

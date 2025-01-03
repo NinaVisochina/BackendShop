@@ -2,7 +2,7 @@
 using AutoMapper.QueryableExtensions;
 using BackendShop.Core.Dto.Category;
 using BackendShop.Core.Interfaces;
-using BackendShop.Core.Services;
+using BackendShop.Services;
 using BackendShop.Data.Data;
 using BackendShop.Data.Entities;
 using Microsoft.AspNetCore.Http;
@@ -50,7 +50,7 @@ namespace BackendShop.BackShop.Controllers
             return Ok();
         }
 
-        [HttpPut]
+        [HttpPut("edit")]
         public async Task<IActionResult> Edit([FromForm] CategoryEditDto model)
         {
             var entity = await _context.Categories.SingleOrDefaultAsync(x => x.CategoryId == model.Id);
@@ -86,8 +86,21 @@ namespace BackendShop.BackShop.Controllers
             var item = _context.Categories
                 .ProjectTo<CategoryDto>(mapper.ConfigurationProvider)
                 .SingleOrDefault(x => x.Id == id);
+
+            if (item == null)
+                return NotFound(new { message = "Категорію не знайдено" });
+
             return Ok(item);
         }
+
+        //[HttpGet("{id}")]
+        //public IActionResult GetById(int id)
+        //{
+        //    var item = _context.Categories
+        //        .ProjectTo<CategoryDto>(mapper.ConfigurationProvider)
+        //        .SingleOrDefault(x => x.Id == id);
+        //    return Ok(item);
+        //}
 
         //[HttpGet("names")]
         //public async Task<IActionResult> GetCategoriesNames()

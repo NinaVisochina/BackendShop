@@ -2,7 +2,7 @@
 using AutoMapper.QueryableExtensions;
 using BackendShop.Core.Dto.SubCategory;
 using BackendShop.Core.Interfaces;
-using BackendShop.Core.Services;
+using BackendShop.Services;
 using BackendShop.Data.Data;
 using BackendShop.Data.Entities;
 using Microsoft.AspNetCore.Http;
@@ -36,6 +36,21 @@ namespace BackendShop.BackShop.Controllers
                 return NotFound();
 
             return Ok(item);
+        }
+
+        // GET: api/SubCategory/search/{categoryId}
+        [HttpGet("search/{categoryId}")]
+        public IActionResult GetByCategoryId(int categoryId)
+        {
+            var subcategories = _context.SubCategories
+                .Where(sc => sc.CategoryId == categoryId)
+                .ProjectTo<SubCategoryDto>(mapper.ConfigurationProvider)
+                .ToList();
+
+            if (!subcategories.Any())
+                return NotFound(new { message = "Підкатегорій для цієї категорії не знайдено" });
+
+            return Ok(subcategories);
         }
 
         // POST: api/SubCategory

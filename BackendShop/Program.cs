@@ -1,7 +1,7 @@
 using BackendShop.Core.Interfaces;
-using BackendShop.Core.Services;
 using BackendShop.Data.Data;
 using BackendShop.Data.DataSeeder;
+using BackendShop.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 

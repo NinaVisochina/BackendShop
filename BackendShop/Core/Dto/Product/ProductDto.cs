@@ -12,7 +12,6 @@ namespace BackendShop.Core.Dto.Product
 
         public string? Description { get; set; } 
 
-        public List<string>? Images { get; set; }
 
         public string? Manufacturer { get; set; }
         public string? Size { get; set; }
@@ -30,5 +29,7 @@ namespace BackendShop.Core.Dto.Product
         public string? Model { get; set; }
         public int SubCategoryId { get; set; }
         public string? SubCategoryName { get; set; }
+        public List<string>? Images { get; set; }
+
     }
 }

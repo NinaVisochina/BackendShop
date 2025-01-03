@@ -2,7 +2,7 @@
 using AutoMapper.QueryableExtensions;
 using BackendShop.Core.Dto.Product;
 using BackendShop.Core.Interfaces;
-using BackendShop.Core.Services;
+using BackendShop.Services;
 using BackendShop.Data.Data;
 using BackendShop.Data.Entities;
 using Microsoft.AspNetCore.Http;
@@ -27,8 +27,6 @@ namespace BackendShop.BackShop.Controllers
                 .ToListAsync();
             return Ok(model);
         }
-
-        //Post: api/Product
         [HttpPost]
         public async Task<IActionResult> Create([FromForm] CreateProductDto modell)
         {
@@ -61,6 +59,107 @@ namespace BackendShop.BackShop.Controllers
             }
             return Created();
         }
+
+        ////Post: api/Product
+        //[HttpPost]
+        //public async Task<IActionResult> Create([FromForm] CreateProductDto modell)
+        //{
+        //    var entity = mapper.Map<Product>(modell);
+        //    _context.Products.Add(entity);
+        //    _context.SaveChanges();
+
+        //    if (modell.ImagesDescIds.Any())
+        //    {
+        //        await _context.ProductDescImages
+        //            .Where(x => modell.ImagesDescIds.Contains(x.Id))
+        //            .ForEachAsync(x => x.ProductId = entity.ProductId);
+        //    }
+
+        //    if (modell.Images != null)
+        //    {
+        //        var p = 1;
+        //        foreach (var image in modell.Images)
+        //        {
+        //            var pi = new ProductImageEntity
+        //            {
+        //                Image = await imageHulk.Save(image),
+        //                Priority = p,
+        //                ProductId = entity.ProductId
+        //            };
+        //            p++;
+        //            _context.ProductImageEntity.Add(pi);
+        //            await _context.SaveChangesAsync();
+        //        }
+        //    }
+        //    return Created();
+        //}
+        //[HttpPost]
+        //public async Task<IActionResult> Create([FromForm] CreateProductDto modell)
+        //{
+        //    try
+        //    {
+        //        // Мапимо DTO на сутність
+        //        var entity = mapper.Map<Product>(modell);
+        //        _context.Products.Add(entity);
+        //        await _context.SaveChangesAsync();
+
+        //        // Додаткові зображення опису
+        //        if (modell.ImagesDescIds.Any())
+        //        {
+        //            await _context.ProductDescImages
+        //                .Where(x => modell.ImagesDescIds.Contains(x.Id))
+        //                .ForEachAsync(x => x.ProductId = entity.ProductId);
+        //        }
+        //        if (modell.Images != null && modell.Images.Any())
+        //            {
+        //                foreach (var image in modell.Images)
+        //                {
+        //                    var savedPath = await imageHulk.Save(image);
+        //                    Console.WriteLine($"Файл збережено: {savedPath}");
+        //                }
+        //            }
+
+        //            return CreatedAtAction(nameof(GetProductById), new { id = 1 }, modell);
+
+
+        //        //// Збереження зображень продукту
+        //        //if (modell.Images != null && modell.Images.Any())
+        //        //{
+        //        //    var priority = 1;
+        //        //    foreach (var image in modell.Images)
+        //        //    {
+        //        //        // Зберігаємо файл і отримуємо шлях
+        //        //        var savedImagePath = await imageHulk.Save(image);
+
+        //        //        // Додаємо інформацію про зображення до бази даних
+        //        //        var productImage = new ProductImageEntity
+        //        //        {
+        //        //            Image = savedImagePath,
+        //        //            Priority = priority,
+        //        //            ProductId = entity.ProductId
+        //        //        };
+
+        //        //        priority++;
+        //        //        _context.ProductImageEntity.Add(productImage);
+        //        //    }
+
+        //        //    await _context.SaveChangesAsync();
+        //        //}
+
+        //        ////Повертаємо результат
+        //        //return CreatedAtAction(nameof(GetProductById), new { id = entity.ProductId }, new
+        //        //{
+        //        //    productId = entity.ProductId,
+        //        //    message = "Продукт успішно створено"
+        //        //});
+
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Console.WriteLine($"Помилка при створенні продукту: {ex.Message}");
+        //        return BadRequest(new { error = "Помилка створення продукту" });
+        //    }
+        //}
 
         // GET: api/Product/2
         [HttpGet("{id}")]
@@ -137,6 +236,29 @@ namespace BackendShop.BackShop.Controllers
             }
             return BadRequest();
         }
+
+        [HttpGet("subcategory/{subCategoryId}")]
+        public async Task<IActionResult> GetProductsBySubCategory(int subCategoryId)
+        {
+            var products = await _context.Products
+                .Where(p => p.SubCategoryId == subCategoryId)
+                .Select(p => new
+                {
+                    p.ProductId,
+                    p.Name,
+                    p.Description,
+                    p.Price,
+                    Images = p.Images.Select(img => img.Image).ToList(),
+                    DescImages = p.ProductDescImages.Select(descImg => descImg.Image).ToList()
+                })
+                .ToListAsync();
+
+            if (!products.Any())
+                return NotFound("Продукти для цієї підкатегорії не знайдено.");
+
+            return Ok(products);
+        }
+
 
         //DELETE: api/Product/2
         [HttpDelete("{id}")]
