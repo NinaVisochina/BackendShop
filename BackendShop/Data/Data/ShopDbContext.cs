@@ -12,8 +12,8 @@ namespace BackendShop.Data.Data
 
         public DbSet<Category> Categories { get; set; }
         public DbSet<SubCategory> SubCategories { get; set; }
-        public DbSet<Product> Products { get; set; }
-        public DbSet<ProductImageEntity> ProductImageEntity { get; set; }
+        public DbSet<ProductEntity> Products { get; set; }
+        public DbSet<ProductImageEntity> ProductImages { get; set; }
         public DbSet<ProductDescImageEntity> ProductDescImages { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

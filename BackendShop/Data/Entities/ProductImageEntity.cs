@@ -16,6 +16,6 @@ namespace BackendShop.Data.Entities
         [ForeignKey("Product")]
         public int ProductId { get; set; }
 
-        public virtual Product? Product { get; set; }
+        public virtual ProductEntity? Product { get; set; }
     }
 }

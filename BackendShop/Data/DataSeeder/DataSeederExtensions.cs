@@ -73,13 +73,13 @@ namespace BackendShop.Data.DataSeeder
                     if (!subcategories.Any()) return; // Переконайтеся, що підкатегорії існують
 
                     var faker = new Faker("uk");
-                    var products = new List<Product>();
+                    var products = new List<ProductEntity>();
 
                     for (int i = 0; i < 5; i++)
                     {
                         var subCategory = faker.PickRandom(subcategories);
 
-                        var product = new Product
+                        var product = new ProductEntity
                         {
                             Code = faker.Commerce.Ean13(),
                             Name = faker.Commerce.ProductName(),
@@ -92,7 +92,7 @@ namespace BackendShop.Data.DataSeeder
                             Price = decimal.Parse(faker.Commerce.Price()),
                             QuantityInPack = faker.Random.Int(1, 10),
                             QuantityInStock = faker.Random.Int(0, 100),
-                            Model = faker.Commerce.ProductMaterial(),
+                            Modeles = faker.Commerce.ProductMaterial(),
                             SubCategoryId = subCategory.SubCategoryId // Зв'язок з підкатегорією
                         };
 
@@ -111,13 +111,13 @@ namespace BackendShop.Data.DataSeeder
                             string imageUrl = $"https://picsum.photos/200/300?random={Guid.NewGuid()}";
                             images.Add(new ProductImageEntity
                             {
-                                ProductId = product.ProductId,
+                                ProductId = product.Id,
                                 Image = await imageHulk.Save(imageUrl),
                                 Priority = j + 1
                             });
                         }
 
-                        dbContext.ProductImageEntity.AddRange(images);
+                        dbContext.ProductImages.AddRange(images);
 
                         // Додаємо описові зображення (ImagesDescIds)
                         for (int j = 0; j < 2; j++)
@@ -125,7 +125,7 @@ namespace BackendShop.Data.DataSeeder
                             string descImageUrl = $"https://picsum.photos/400/300?random={Guid.NewGuid()}";
                             dbContext.ProductDescImages.Add(new ProductDescImageEntity
                             {
-                                ProductId = product.ProductId,
+                                ProductId = product.Id,
                                 Image = await imageHulk.Save(descImageUrl)
                             });
                         }
