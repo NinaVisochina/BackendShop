@@ -9,6 +9,9 @@ namespace BackendShop.Core.MapperProfiles
     {
         public CategoryProfile()
         {
+            //CreateMap<Category, CategoryDto>();
+            //CreateMap<CategoryCreateDto, Category>();
+            //CreateMap<CategoryEditDto, Category>();
             CreateMap<Category, CategoryDto>()
                     .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
                     .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.CategoryId))
